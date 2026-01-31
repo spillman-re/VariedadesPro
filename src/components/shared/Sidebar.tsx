@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react' // Importado para el estado móvil
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
@@ -12,15 +13,17 @@ import {
   LogOut,
   Warehouse,
   History,
-  Bookmark // <--- IMPORTACIÓN AGREGADA
+  Bookmark,
+  Menu // Icono para el disparador móvil
 } from 'lucide-react'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
 
-// Definimos los roles para evitar errores de undefined
 const menuItems = [
   { name: 'Inicio', href: '/', icon: LayoutDashboard, roles: [1, 2, 3] },
   { name: 'Punto de Venta', href: '/ventas', icon: ShoppingCart, roles: [1, 2, 3] },
   { name: 'Productos', href: '/productos', icon: Package, roles: [1, 2] },
-  { name: 'Clasificación', href: '/categorias', icon: Bookmark, roles: [1, 2] }, // <--- ROLES AGREGADOS
+  { name: 'Clasificación', href: '/categorias', icon: Bookmark, roles: [1, 2] },
   { name: 'Inventario', href: '/inventario', icon: Warehouse, roles: [1, 2] },
   { name: 'Kardex', href: '/kardex', icon: History, roles: [1] },
   { name: 'Usuarios', href: '/usuarios', icon: Users, roles: [1] },
@@ -30,9 +33,11 @@ const menuItems = [
 export function Sidebar() {
   const pathname = usePathname()
   const { perfil, signOut } = useAuth()
+  const [open, setOpen] = useState(false)
 
-  return (
-    <div className="flex flex-col w-64 bg-slate-900 text-slate-300 h-screen sticky top-0">
+  // Contenido de la navegación (extraído para no repetir código)
+  const NavContent = () => (
+    <div className="flex flex-col h-full bg-slate-900 text-slate-300">
       <div className="p-6 flex items-center gap-3 border-b border-slate-800">
         <div className="bg-blue-600 p-1.5 rounded-lg">
           <Warehouse className="text-white" size={20} />
@@ -42,7 +47,6 @@ export function Sidebar() {
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
-          // Filtrar por rol (si perfil existe). Usamos el encadenamiento opcional ?.
           if (perfil && !item.roles?.includes(perfil.id_rol || 0)) return null;
 
           const isActive = pathname === item.href
@@ -50,6 +54,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setOpen(false)} // Cierra el menú al hacer clic en móvil
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm",
                 isActive 
@@ -74,5 +79,28 @@ export function Sidebar() {
         </button>
       </div>
     </div>
+  )
+
+  return (
+    <>
+      {/* TRIGGER MÓVIL (Solo visible en celulares/tablets) */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="bg-slate-900 border-slate-800 text-white hover:bg-slate-800 rounded-xl shadow-xl">
+              <Menu size={20} />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-72 bg-slate-900 border-r-slate-800">
+            <NavContent />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* SIDEBAR DESKTOP (Se oculta en móvil, se muestra en LG en adelante) */}
+      <aside className="hidden lg:flex flex-col w-64 bg-slate-900 text-slate-300 h-screen sticky top-0 shrink-0">
+        <NavContent />
+      </aside>
+    </>
   )
 }
