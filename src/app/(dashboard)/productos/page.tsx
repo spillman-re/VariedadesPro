@@ -217,7 +217,11 @@ export default function ProductosPage() {
       }
 
       let articuloId = editingProduct?.id
-      const { data: art, error: artErr } = await (articuloId ? supabase.from('articulo').update(payloadArticulo).eq('id', articuloId).select().single() : supabase.from('articulo').insert([payloadArticulo]).select().single())
+      // CORRECCIÓN TYPE ERROR: añadimos (payloadArticulo as any)
+      const { data: art, error: artErr } = await (articuloId 
+        ? supabase.from('articulo').update(payloadArticulo as any).eq('id', articuloId).select().single() 
+        : supabase.from('articulo').insert([payloadArticulo as any]).select().single())
+      
       if (artErr) throw artErr
       articuloId = art.id
 
@@ -241,7 +245,7 @@ export default function ProductosPage() {
         const { data: newP, error: pErr } = await supabase.from('articulo_presentacion').insert({
           id_articulo: articuloId, nombre: p.nombre.toUpperCase(), factor: p.factor,
           precio_venta: parseFloat(p.precio_venta) || 0, codigo_barras: p.codigo_barras, es_principal: p.es_principal
-        }).select().single()
+        } as any).select().single()
         if (pErr) throw pErr
 
         if (p.mayoreo?.length > 0) {
@@ -254,13 +258,13 @@ export default function ProductosPage() {
           const { data: vFis, error: vfErr } = await supabase.from('articulo_variante').insert({
             id_articulo: articuloId, id_presentacion: newP.id, id_tipo: vc.id_tipo,
             valor: vc.valor.toUpperCase(), codigo_barras: vc.codigo_barras || null
-          }).select().single()
+          } as any).select().single()
           if (vfErr) throw vfErr
 
           await supabase.from('articulo_presentacion_variante').insert({
             id_presentacion: newP.id, id_variante: vFis.id,
             ajuste_tipo: vc.ajuste_tipo, ajuste_valor: vc.tiene_ajuste ? parseFloat(vc.ajuste_valor) : 0
-          })
+          } as any)
         }
       }
     },
@@ -444,7 +448,7 @@ export default function ProductosPage() {
             </Table>
           </div>
 
-          {/* Mobile Card View (Solo visible en pantallas pequeñas) */}
+          {/* Mobile Card View */}
           <div className="md:hidden divide-y divide-slate-100">
             {queryLoading ? (
               <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-blue-600" size={32} /></div>
@@ -485,7 +489,7 @@ export default function ProductosPage() {
           </div>
         </div>
 
-        {/* FORMULARIO GIGANTE - ACTUALIZADO PARA RESPONSIVE */}
+        {/* FORMULARIO GIGANTE */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetContent side="right" className="w-full sm:max-w-2xl p-0 flex flex-col bg-white border-none shadow-3xl">
             <SheetHeader className="p-6 md:p-8 bg-slate-900 text-white shadow-xl">
@@ -508,7 +512,6 @@ export default function ProductosPage() {
               </div>
 
               <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 custom-scrollbar">
-                {/* TAB GENERAL */}
                 <TabsContent value="general" className="space-y-6 md:space-y-8 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-blue-600"><Tag size={14} strokeWidth={3} /><span className="text-[10px] font-black uppercase tracking-widest">Identificación</span></div>
@@ -518,13 +521,11 @@ export default function ProductosPage() {
                     </div>
                   </div>
 
-                  {/* Variantes Informativas */}
                   <div className="bg-slate-50 p-4 md:p-6 rounded-[25px] md:rounded-3xl space-y-4 border border-slate-100">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-slate-900"><Info size={14} strokeWidth={3} /><span className="text-[10px] font-black uppercase tracking-widest">Atributos Informativos</span></div>
                       <Button onClick={addVarianteInformativa} size="sm" variant="ghost" className="h-8 text-[9px] font-black text-blue-600 uppercase transition-all">+ Añadir</Button>
                     </div>
-
                     <div className="space-y-2">
                       {formData.variantes_informativas?.map((v: any, idx: number) => (
                         <div key={v.id_temp || idx} className="grid grid-cols-12 gap-2 items-center bg-white border border-slate-200 rounded-xl p-1.5 shadow-sm">
@@ -576,7 +577,6 @@ export default function ProductosPage() {
                   </div>
                 </TabsContent>
 
-                {/* TAB PRESENTACIONES - RESPONSIVE */}
                 <TabsContent value="presentaciones" className="space-y-6 mt-0 animate-in fade-in">
                   {formData.presentaciones?.map((p: any, idx: number) => (
                     <div key={p.id_temp || idx} className="p-4 md:p-6 bg-slate-50 rounded-2xl md:rounded-[35px] border border-slate-100 space-y-4 relative group shadow-sm">
@@ -586,8 +586,6 @@ export default function ProductosPage() {
                         <div className="col-span-1 md:col-span-3 space-y-1"><Label className="text-[8px] font-black text-slate-400 uppercase">Precio Base</Label><div className="relative"><span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-blue-600">C$</span><Input className="h-10 pl-7 rounded-xl border-none shadow-sm font-black text-blue-700 text-xs" value={p.precio_venta} onChange={e => handleNumberInput(e.target.value, (v) => updatePresentacion(idx, 'precio_venta', v))} /></div></div>
                         <div className="col-span-2 md:col-span-4 space-y-1"><Label className="text-[8px] font-black text-slate-400 uppercase">SKU</Label><Input className="h-10 rounded-xl border-none shadow-sm font-mono text-[9px] uppercase" value={p.codigo_barras || ''} onChange={e => updatePresentacion(idx, 'codigo_barras', e.target.value)} /></div>
                       </div>
-
-                      {/* Mayoreo Responsive */}
                       <div className="pt-2 border-t border-slate-200">
                         <div className="flex justify-between items-center mb-2"><span className="text-[8px] font-black uppercase text-emerald-600">Reglas de Mayoreo</span><Button onClick={() => addMayoreo(idx)} size="sm" variant="ghost" className="h-6 text-[8px] font-black text-emerald-600"><Plus size={10} className="mr-1" /> Añadir Rango</Button></div>
                         <div className="space-y-2">
@@ -611,7 +609,6 @@ export default function ProductosPage() {
                   <Button onClick={addPresentacion} className="w-full h-12 rounded-2xl bg-blue-50 text-blue-600 border-none font-black uppercase text-[10px] tracking-widest hover:bg-blue-600 hover:text-white transition-all"><Plus size={16} className="mr-2" /> Nueva Presentación</Button>
                 </TabsContent>
 
-                {/* TAB VARIANTES - RESPONSIVE */}
                 <TabsContent value="variantes" className="space-y-4 mt-0 animate-in fade-in">
                   {formData.presentaciones?.map((p: any, pIdx: number) => (
                     <div key={p.id_temp || pIdx} className={`border border-slate-100 rounded-2xl md:rounded-[35px] overflow-hidden transition-all duration-300 ${expandedPres === p.id_temp ? 'bg-slate-50/50 shadow-lg' : 'bg-white'}`}>
@@ -637,7 +634,6 @@ export default function ProductosPage() {
                           <ChevronDown size={20} className="text-slate-300" />
                         </div>
                       </div>
-
                       {expandedPres === p.id_temp && (
                         <div className="p-4 md:p-6 pt-0 space-y-4 animate-in slide-in-from-top-2 duration-300">
                           <div className="space-y-4 md:pl-4 md:border-l-2 md:border-blue-600/20 mt-2">
@@ -660,7 +656,6 @@ export default function ProductosPage() {
                                     <div className="relative"><Barcode className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={14} /><Input className="h-10 pl-10 bg-white/10 border-none text-white font-mono text-xs rounded-xl uppercase" placeholder="ESCANEAR..." value={vc.codigo_barras} onChange={e => updateVarianteComercial(pIdx, vcIdx, 'codigo_barras', e.target.value)} /></div>
                                   </div>
                                 </div>
-
                                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 pt-3 border-t border-white/5">
                                   <div className="flex items-center gap-2">
                                     <Switch checked={vc.tiene_ajuste} onCheckedChange={c => updateVarianteComercial(pIdx, vcIdx, 'tiene_ajuste', c)} className="scale-75" />
@@ -701,14 +696,13 @@ export default function ProductosPage() {
           </SheetContent>
         </Sheet>
 
-        {/* ALERT DIALOG ELIMINAR - CORREGIDO */}
+        {/* ALERT DIALOG ELIMINAR */}
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent className="rounded-[30px] md:rounded-[50px] p-6 md:p-10 border-none shadow-3xl bg-white text-center flex flex-col items-center max-w-[90vw] md:max-w-lg">
             <AlertDialogHeader className="flex flex-col items-center">
               <div className="h-16 w-16 md:h-20 md:w-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
                 <AlertTriangle size={32} />
               </div>
-              {/* Esta es la etiqueta obligatoria para la accesibilidad */}
               <AlertDialogTitle className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">
                 ¿Desactivar Artículo?
               </AlertDialogTitle>
@@ -716,7 +710,6 @@ export default function ProductosPage() {
                 Esta acción ocultará el producto del catálogo activo.
               </AlertDialogDescription>
             </AlertDialogHeader>
-
             <AlertDialogFooter className="mt-8 flex flex-col md:flex-row gap-3 w-full">
               <AlertDialogCancel className="h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest border-slate-100 flex-1 hover:bg-slate-50 transition-all shadow-sm">
                 Cancelar
