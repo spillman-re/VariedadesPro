@@ -33,8 +33,7 @@ export default function POSPrototipo() {
   
   // Rastreo de selección de variantes por producto en la UI
   const [variantesSeleccionadas, setVariantesSeleccionadas] = useState<Record<string, any[]>>({})
-
-  // 1️⃣ CARGAR PRODUCTOS
+  
   const buscarProductos = async (term: string) => {
     if (term.length < 2) return
     setLoading(true)
@@ -52,8 +51,7 @@ export default function POSPrototipo() {
     if (!error) setProductos(data || [])
     setLoading(false)
   }
-
-  // 2️⃣ MOTOR DE CÁLCULO DE PRECIOS (LOGICA: PRECIO + AJUSTE * FACTOR)
+  
   const calcularPrecioFinal = (presentacion: any, variantesSel: any[], cantidad: number) => {
     const precioBasePres = parseFloat(presentacion.precio_venta) || 0
     const factor = parseInt(presentacion.factor) || 1
@@ -83,8 +81,7 @@ export default function POSPrototipo() {
     
     return precioConVariantes
   }
-
-  // 3️⃣ GESTIÓN DE SELECCIÓN DE VARIANTES
+  
   const toggleVariante = (productoId: string, variante: any) => {
     const actuales = variantesSeleccionadas[productoId] || []
     const existe = actuales.find(v => v.id === variante.id)
@@ -101,7 +98,7 @@ export default function POSPrototipo() {
     setVariantesSeleccionadas({ ...variantesSeleccionadas, [productoId]: nuevas })
   }
 
-  // 4️⃣ AGREGAR AL CARRITO
+
   const agregarAlCarrito = (articulo: any, pres: any) => {
     const vars = variantesSeleccionadas[articulo.id] || []
     

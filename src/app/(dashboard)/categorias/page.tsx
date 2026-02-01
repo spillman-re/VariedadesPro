@@ -22,14 +22,14 @@ export default function CategoriasMarcasPage() {
   const [searchCat, setSearchCat] = useState('')
   const [searchMarca, setSearchMarca] = useState('')
 
-  // 1. QUERIES - AGREGADO refetchOnMount para actualizar contadores al entrar
+  // 1. QUERIES
   const { data: categorias, isLoading: loadingCats } = useQuery({
     queryKey: ['categorias'],
     queryFn: async () => {
       const { data } = await supabase.from('categoria').select('*, articulo(count)').eq('activo', true).order('nombre')
       return data || []
     },
-    refetchOnMount: 'always' // Esto asegura que al cambiar de pestaña el contador sea real
+    refetchOnMount: 'always' 
   })
 
   const { data: marcas, isLoading: loadingMarcas } = useQuery({
@@ -38,7 +38,7 @@ export default function CategoriasMarcasPage() {
       const { data } = await supabase.from('marca').select('*, articulo(count)').eq('activo', true).order('nombre')
       return data || []
     },
-    refetchOnMount: 'always' // Esto asegura que al cambiar de pestaña el contador sea real
+    refetchOnMount: 'always' 
   })
 
   // 2. MUTACIÓN CATEGORÍA

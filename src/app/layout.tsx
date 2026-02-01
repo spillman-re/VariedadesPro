@@ -15,10 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <QueryClientProvider client={queryClient}>
           <AuthProvider> 
             {children}
-            {/* Añadimos el Toaster aquí. 
-               richColors: para que los errores sean rojos y éxitos verdes.
-               closeButton: para que el usuario pueda cerrar la notificación.
-            */}
+            {
+              
+            }
             <Toaster position="top-right" richColors closeButton />
           </AuthProvider>
         </QueryClientProvider>

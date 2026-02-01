@@ -29,8 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     )
   }
 
-  // Si no hay perfil (por ejemplo, cuenta inactiva), no renderizamos nada 
-  // (El AuthContext ya debería haber ejecutado el signOut)
+  // Si no hay perfil  
   if (!perfil) return null
 
   return (

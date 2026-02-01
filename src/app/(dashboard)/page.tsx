@@ -15,8 +15,7 @@ import Link from 'next/link'
 
 export default function DashboardPage() {
   const { perfil } = useAuth()
-
-  // Simulación de datos (En la Fase 3 conectaremos esto a Supabase con React Query)
+  
   const stats = [
     { title: "Ventas del Día", value: "C$ 0.00", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
     { title: "Artículos en Catálogo", value: "0", icon: PackageSearch, color: "text-blue-600", bg: "bg-blue-50" },
